@@ -1,6 +1,7 @@
 function Rook (color, location) {
 	//A constructor for the Rook object
 	var self = this;
+	this.moveCount = 0;
 	this.type = "Rook";
 	this.color = color;
 	this.location = location;
@@ -18,15 +19,16 @@ function Rook (color, location) {
 		var desiredletteridx = translateLocation(desiredlocation);
 		var currentdigit = self.location[1];
 		var desireddigit = desiredlocation[1];
+		//movmetn loop if moving vertically
 		if (currentletteridx === desiredletteridx) {
       var distance = desireddigit - currentdigit;
       var counter = null;
       if (distance > 0) counter = 1;
-      if (distance < 0) counter = -1
+      if (distance < 0) counter = -1;
 			for (var i = currentdigit; i != desireddigit; i += counter) {
 				validMove = true;
 				if (i == currentdigit) continue;
-				var obstacle = isOccupied([letters[currentletteridx], i])
+				var obstacle = isOccupied([letters[currentletteridx], i]);
 				if (obstacle != "empty") {
 					validMove = false;
 					break;
@@ -35,6 +37,7 @@ function Rook (color, location) {
 			if (validMove && target != "empty" && !opposite) {
 				validMove = false;
 			}
+		//movment loop if moving horizontally
 		} else if (currentdigit === desireddigit) {
 			var distance = desiredletteridx - currentletteridx;
       var counter = null;

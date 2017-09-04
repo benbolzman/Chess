@@ -1,6 +1,7 @@
 function Knight (color, location) {
 	//A constructor for knights
 	var self = this;
+	this.moveCount = 0;
 	this.type = "knight";
 	this.color = color;
 	this.location = location;

@@ -1,6 +1,7 @@
 function Queen (color, location) {
 	//A constructor for queens
 	var self = this;
+	this.moveCount = 0;
 	this.type = "Queen";
 	this.color = color;
 	this.location = location;
@@ -23,12 +24,17 @@ function Queen (color, location) {
 		var lettercounter = null;
 		var digitcounter = null;
 		if (letterdist > 0) lettercounter = 1;
-		if (letterdist < 0) lettercounter = -1
+		if (letterdist < 0) lettercounter = -1;
 		if (digitdist > 0) digitcounter = 1;
 		if (digitdist < 0) digitcounter = -1;
 		var totalcounter = null;
+		//movmetn loop if moving vertically
 		if (currentletteridx === desiredletteridx) {
-			for (var i = currentdigit; i != desireddigit; i += digitcounter) {
+      var distance = desireddigit - currentdigit;
+      var counter = null;
+      if (distance > 0) counter = 1;
+      if (distance < 0) counter = -1
+			for (var i = currentdigit; i != desireddigit; i += counter) {
 				validMove = true;
 				if (i == currentdigit) continue;
 				var obstacle = isOccupied([letters[currentletteridx], i])
@@ -38,13 +44,18 @@ function Queen (color, location) {
 				}
 			}
 			if (validMove && target != "empty" && !opposite) {
-				vailidMove = false;
+				validMove = false;
 			}
+		//movment loop if moving horizontally
 		} else if (currentdigit === desireddigit) {
-			for (var i = currentletteridx; i != desiredletteridx; i += lettercounter) {
+			var distance = desiredletteridx - currentletteridx;
+      var counter = null;
+      if (distance > 0) counter = 1;
+      if (distance < 0) counter = -1;
+			for (var i = currentletteridx; i != desiredletteridx; i += counter) {
 				validMove = true;
 				if (i == currentletteridx) continue;
-				var obstacle = isOccupied([letters[i], currentdigit])
+				var obstacle = isOccupied([letters[i], currentdigit]);
 				if (obstacle != "empty") {
 					validMove = false;
 					break;
@@ -53,6 +64,7 @@ function Queen (color, location) {
 			if (validMove && target != "empty" && !opposite) {
 				validMove = false;
 			}
+		//movment loop if moving diagonally
 		} else if (Math.abs(letterdist) === Math.abs(digitdist)) {
 			for (var i = currentletteridx; i != desiredletteridx; i += lettercounter) {
 				validMove = true;
@@ -67,7 +79,7 @@ function Queen (color, location) {
 				}
 			}
 			if (validMove && target != "empty" && !opposite) {
-				vailidMove = false;
+				validMove = false;
 			}
 		} else {
 			validMove = false;
