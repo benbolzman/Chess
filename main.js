@@ -43,7 +43,8 @@ function PLACE (piece, desiredlocation) {
 	SAVE();
 }
 
-function MOVE (piece, desiredlocation) {
+/*function MOVE (piece, desiredlocation) {
+	//moves the image with the piece
 	var currentletter = piece.location[0];
 	var currentdigit = piece.location[1];
 	var desiredletter = desiredlocation[0];
@@ -53,26 +54,26 @@ function MOVE (piece, desiredlocation) {
 		var color = removed.color;
 		if (color == "white") {
 			var index = blackKing.otherteam.findIndex(function (piece) {
-				return piece === removed
-			});
-			blackKing.otherteam.splice(index, 1);
-		} else if (color == "black") {
-			var index = whiteKing.otherteam.findIndex(function (piece) {
-				return piece === removed
+				return piece === removed;
 			});
 			whiteKing.otherteam.splice(index, 1);
+		} else if (color == "black") {
+			var index = whiteKing.otherteam.findIndex(function (piece) {
+				return piece === removed;
+			});
+			blackKing.otherteam.splice(index, 1);
 		}
 	}
 	board[currentletter][currentdigit] = "empty";
-	$('.board-row-' + currentdigit + ' .board-column-' + currentletter + ' img').remove();
+	$('.board-row-' + currentdigit + ' .board-column-' + currentletter + ' img').remove();//removes the current picture of piece
 	piece.location = desiredlocation;
 	currentletter = piece.location[0];
 	currentdigit = piece.location[1];
 	board[currentletter][currentdigit] = piece;
-	$('.board-row-' + currentdigit + ' .board-column-' + currentletter + ' img').remove();
-	$('.board-row-' + currentdigit + ' .board-column-' + currentletter).append('<img src="' + piece.image + '" class="pieces">');
+	$('.board-row-' + currentdigit + ' .board-column-' + currentletter + ' img').remove();//removes any img at new location
+	$('.board-row-' + currentdigit + ' .board-column-' + currentletter).append('<img src="' + piece.image + '" class="pieces">');//puts the piece img in new location
 	SAVE();
-}
+}*/
 
 function getLocation (locationstring) {
 	var letter = locationstring.slice(0, 1);
@@ -85,19 +86,25 @@ function checkSacrifice () {
 	var whiteInCheck = false;
 	var blacklocation = blackKing.location;
 	var blackInCheck = false;
+	var threatLetter = null;
+	var threatNumber = null;
 	for (piece of whiteKing.otherteam) {
 		if(piece.checkKing(whitelocation)) {
+			threatLetter = piece.location[0];
+			threatNumber = piece.location[1];
 			whiteInCheck = true;
 			break;
 		}
 	}
 	for (piece of blackKing.otherteam) {
 		if(piece.checkKing(blacklocation)) {
+			threatLetter = piece.location[0];
+			threatNumber = piece.location[1];
 			blackInCheck = true;
 			break;
 		}
 	}
-	return [whiteInCheck, blackInCheck];
+	return [whiteInCheck, blackInCheck, threatLetter, threatNumber];
 }
 
 //Creating the black pawn objects
@@ -141,9 +148,6 @@ var whiteKing = new King ("white", ["E", 1]);
 var blackKing = new King ("black", ["E", 8]);
 
 //The board with memory of what pieces are where
-//var jsonboard = localStorage.getItem('board');
-//var board = JSON.parse(jsonboard);
-//if (!board) {
 	var board = {
 		A: ["empty", whiterookL, whitepawns[0], "empty", "empty", "empty", "empty", blackpawns[0], blackrookL ],
 		B: ["empty", whiteknightL, whitepawns[1], "empty", "empty", "empty", "empty", blackpawns[1], blackknightL ],
@@ -154,9 +158,6 @@ var blackKing = new King ("black", ["E", 8]);
 		G: ["empty", whiteknightR, whitepawns[6], "empty", "empty", "empty", "empty", blackpawns[6], blackknightR ],
 		H: ["empty", whiterookR, whitepawns[7], "empty", "empty", "empty", "empty", blackpawns[7], blackrookR ]
 	}
-	//localStorage.setItem('board', JSON.stringify(board));
-//}
-
 var stringcurrentlocation = null;
 var stringdesiredlocation = null;
 var currentarry = null;
@@ -193,8 +194,10 @@ function main () {
 		}
 	}
 	$('.chess-column').click(function () {
+		//sellects pieces and tells them where to go
 		var self = this;
 		var player = null;
+		var notInCheck = true;
 		if (turncounter % 2 == 0) {
 			player = "black";
 		} else {
@@ -211,39 +214,95 @@ function main () {
 		} else {
 			stringcurrentlocation = $(firstclick).attr("data-location");
 			currentarry = getLocation(stringcurrentlocation);
+			var yourPiece = (board[currentarry[0]][currentarry[1]]);
 			stringdesiredlocation = $(self).attr('data-location');
 			desiredarry = getLocation(stringdesiredlocation);
-			if (stringcurrentlocation != stringdesiredlocation) {
-				if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry)) {
-					MOVE(board[currentarry[0]][currentarry[1]], desiredarry);
-					console.log(board[desiredarry[0]][desiredarry[1]].type);
-					var sacrificearry = checkSacrifice();
-					if ((player == "white" && sacrificearry[0]) || (player == "black" && sacrificearry[1])) {
-						MOVE(board[desiredarry[0]][desiredarry[1]], currentarry);
-						alert("Can't put your king in check!");
+			var apponent = (board[desiredarry[0]][desiredarry[1]]);
+			if (apponent.color == player){
+				if(yourPiece.type == 'King'
+					 && apponent.type == 'Rook'
+					 && apponent.color == player
+					 && yourPiece.moveCount == 0
+					 && apponent.moveCount == 0){
+						if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry)) {
+							if (apponent.location[0] == "A") {
+								PLACE(board[currentarry[0]][currentarry[1]], ["C", currentarry[1]]);
+								PLACE(board[desiredarry[0]][desiredarry[1]], ["D", currentarry[1]]);
+							} else if (apponent.location[0] == "H") {
+								PLACE(board[currentarry[0]][currentarry[1]], ["G", currentarry[1]]);
+								PLACE(board[desiredarry[0]][desiredarry[1]], ["F", currentarry[1]]);
+							}
+							turncounter++;
+							yourPiece.moveCount += 1;
+							apponent.moveCount += 1;
+							if (turncounter % 2 == 0) {
+								player = "black";
+							} else {
+								player = "white";
+							}
+							$('#navbox .turn p').html("It is " + player + "'s turn.'");
+							$('#boardbox .chosen').removeClass('chosen');
+							} else {
+									alert("Invalid Move!");
+								}
 					} else {
-						if (player == "white" && sacrificearry[1]) {
-							var location = blackKing.location;
-							$('.board-row-' + location[1] + ' .board-column-' + location[0]).addClass('inCheck');
-						} else if (player == "black" && sacrificearry[0]) {
-							var location = whiteKing.location;
-							$('.board-row-' + location[1] + ' .board-column-' + location[0]).addClass('inCheck');
-						} else {
-							$('#boardbox .inCheck').removeClass('inCheck');
+							$('#boardbox .chosen').removeClass('chosen');
+							$(self).addClass('chosen');
 						}
-						turncounter++;
-						if (turncounter % 2 == 0) {
-							player = "black";
-						} else {
-							player = "white";
+			} else  {
+				if (stringcurrentlocation != stringdesiredlocation) {
+					if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry)) {
+						PLACE(board[currentarry[0]][currentarry[1]], desiredarry);
+						var sacrificearry = checkSacrifice();
+						if ((player == "white" && sacrificearry[0]) || (player == "black" && sacrificearry[1])) {
+							//checks to make sure that your king is not in check
+							if (sacrificearry[2] === desiredarry[0] && sacrificearry[3] === desiredarry[1]){
+							} else {
+							PLACE(board[desiredarry[0]][desiredarry[1]], currentarry);//moves the piece back to original spot
+							if (apponent != 'empty') PLACE(apponent, desiredarry);
+							notInCheck = false;
+							alert("Can't put your king in check!");
+							}
+
+						} if (notInCheck){
+						 if (player == "white" && sacrificearry[1]) {
+								var location = blackKing.location;
+								$('.board-row-' + location[1] + ' .board-column-' + location[0]).addClass('inCheck');
+							} else if (player == "black" && sacrificearry[0]) {
+								var location = whiteKing.location;
+								$('.board-row-' + location[1] + ' .board-column-' + location[0]).addClass('inCheck');
+							} else {
+								$('#boardbox .inCheck').removeClass('inCheck');
+							}
+							turncounter++;
+							yourPiece.moveCount += 1;
+							if (turncounter % 2 == 0) {
+								player = "black";
+							} else {
+								player = "white";
+							}
+							$('#navbox .turn p').html("It is " + player + "'s turn.'");
+							if (apponent != 'empty') {
+								//removes the taken pieces form the kingspieces arry
+								if (player == "white") {
+									var index = blackKing.otherteam.findIndex(function (piece) {
+										return piece === apponent;
+									});
+									blackKing.otherteam.splice(index, 1);
+								} else if (player == "black") {
+									var index = whiteKing.otherteam.findIndex(function (piece) {
+										return piece === apponent;
+									});
+									whiteKing.otherteam.splice(index, 1);
+								}
+							}
 						}
-						$('#navbox .turn p').html("It is " + player + "'s turn.'");
+					} else {
+								alert("Invalid Move!");
 					}
-				} else {
-					alert("Invalid Move!");
 				}
+				$('#boardbox .chosen').removeClass('chosen');
 			}
-			$('#boardbox .chosen').removeClass('chosen');
 		}
 	});
 }

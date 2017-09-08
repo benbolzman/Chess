@@ -1,6 +1,7 @@
 function Bishop (color, location) {
 	//A consturctor for bishops
 	var self = this;
+	this.moveCount = 0;
 	this.type = "bishop";
 	this.color = color;
 	this.location = location;

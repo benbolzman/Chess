@@ -1,6 +1,7 @@
 function Pawn (color, location) {
 	//A constructor for pawns
 	var self = this;
+	this.moveCount = 0;
 	this.type = "pawn";
 	this.color = color;
 	if (color === "white") {
