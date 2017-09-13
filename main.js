@@ -43,38 +43,6 @@ function PLACE (piece, desiredlocation) {
 	SAVE();
 }
 
-/*function MOVE (piece, desiredlocation) {
-	//moves the image with the piece
-	var currentletter = piece.location[0];
-	var currentdigit = piece.location[1];
-	var desiredletter = desiredlocation[0];
-	var desireddigit = desiredlocation[1];
-	var removed = isOccupied(desiredlocation);
-	if (removed != "empty") {
-		var color = removed.color;
-		if (color == "white") {
-			var index = blackKing.otherteam.findIndex(function (piece) {
-				return piece === removed;
-			});
-			whiteKing.otherteam.splice(index, 1);
-		} else if (color == "black") {
-			var index = whiteKing.otherteam.findIndex(function (piece) {
-				return piece === removed;
-			});
-			blackKing.otherteam.splice(index, 1);
-		}
-	}
-	board[currentletter][currentdigit] = "empty";
-	$('.board-row-' + currentdigit + ' .board-column-' + currentletter + ' img').remove();//removes the current picture of piece
-	piece.location = desiredlocation;
-	currentletter = piece.location[0];
-	currentdigit = piece.location[1];
-	board[currentletter][currentdigit] = piece;
-	$('.board-row-' + currentdigit + ' .board-column-' + currentletter + ' img').remove();//removes any img at new location
-	$('.board-row-' + currentdigit + ' .board-column-' + currentletter).append('<img src="' + piece.image + '" class="pieces">');//puts the piece img in new location
-	SAVE();
-}*/
-
 function getLocation (locationstring) {
 	var letter = locationstring.slice(0, 1);
 	var digit = parseInt(locationstring.slice(2));
@@ -218,7 +186,7 @@ function main () {
 			stringdesiredlocation = $(self).attr('data-location');
 			desiredarry = getLocation(stringdesiredlocation);
 			var apponent = (board[desiredarry[0]][desiredarry[1]]);
-			if (apponent.color == player){
+			if (apponent.color == player){ //this block is for castling
 				if(yourPiece.type == 'King'
 					 && apponent.type == 'Rook'
 					 && apponent.color == player
@@ -252,6 +220,10 @@ function main () {
 			} else  {
 				if (stringcurrentlocation != stringdesiredlocation) {
 					if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry)) {
+						if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry) == "Enpassant"){ //this block is for En passant
+							Direction = yourPiece.direction;
+							$('.board-row-' + (desiredarry[1]+(Direction * -1)) + ' .board-column-' + desiredarry[0] + ' img').remove();//removes the opposite pawn from is square
+						}
 						PLACE(board[currentarry[0]][currentarry[1]], desiredarry);
 						var sacrificearry = checkSacrifice();
 						if ((player == "white" && sacrificearry[0]) || (player == "black" && sacrificearry[1])) {
