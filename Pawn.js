@@ -2,6 +2,7 @@ function Pawn (color, location) {
 	//A constructor for pawns
 	var self = this;
 	this.moveCount = 0;
+	this.lastMoved = null;
 	this.type = "pawn";
 	this.color = color;
 	if (color === "white") {
@@ -15,8 +16,16 @@ function Pawn (color, location) {
 	this.checkMove = (function (desiredlocation) {
 		var obstacle = isOccupied(desiredlocation);
 		var opposite = null;
+		var Enpassant = null;
 		if (obstacle === "empty") {
-			opposite = false;
+			if ([ desiredlocation[0], desiredlocation[1] + (self.direction * -1)].color != self.color
+				&& board[desiredlocation[0]][desiredlocation[1] + (self.direction * -1)].moveCount == 1
+				&& turncounter - (board[desiredlocation[0]][desiredlocation[1] + (self.direction * -1)].lastMoved) == 1){
+					opposite = true;
+					Enpassant = "Enpassant";
+			} else {
+					opposite = false;
+				}
 		} else {
 			opposite = isOpposing(self, obstacle);
 		}
@@ -42,9 +51,15 @@ function Pawn (color, location) {
 				validMove = false;
 			}
 		}
-		currentletteridx = letters[currentletteridx];
-		desiredletteridx = letters[desiredletteridx];
-		return validMove;
+		//currentletteridx = letters[currentletteridx];
+		//desiredletteridx = letters[desiredletteridx];
+		if (Enpassant) return Enpassant;
+		else {
+			if (validMove){
+				self.lastMoved = turncounter;
+			}
+			return validMove;
+		}
 	});
 	this.checkKing = (function (kingdest) {
 		var currentletteridx = translateLocation(self.location);

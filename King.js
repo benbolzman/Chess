@@ -67,12 +67,9 @@ function King (color, location) {
 				var obstacle = isOccupied([letters[i], currentdigit]);
 				if (obstacle != "empty") {
 					validMove = false;
-					console.log('there is a piece in the way');
 					break;
 				}
 				for (piece of self.otherteam) {
-					console.log(letters[i]);
-					console.log([letters[i], 1]);
 					if(piece.checkKing([letters[i], 1])) {
 						validMove = false;
 						break;
