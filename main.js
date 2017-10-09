@@ -1,5 +1,4 @@
 var letters = ["placeholder", "A", "B", "C", "D", "E", "F", "G", "H"]
-
 function translateLocation (locationarry) {
 	//Changes location letter (i.e "A" in ["A", 1]) to appropriate number for math
 	var number = letters.findIndex(function (element) {
@@ -54,25 +53,27 @@ function checkSacrifice () {
 	var whiteInCheck = false;
 	var blacklocation = blackKing.location;
 	var blackInCheck = false;
-	var threatLetter = null;
-	var threatNumber = null;
+	var threatLetterW = null;
+	var threatNumberW = null;
+	var threatLetterB = null;
+	var threatNumberB = null;
 	for (piece of whiteKing.otherteam) {
 		if(piece.checkKing(whitelocation)) {
-			threatLetter = piece.location[0];
-			threatNumber = piece.location[1];
+			threatLetterB = piece.location[0];
+			threatNumberB = piece.location[1];
 			whiteInCheck = true;
 			break;
 		}
 	}
 	for (piece of blackKing.otherteam) {
 		if(piece.checkKing(blacklocation)) {
-			threatLetter = piece.location[0];
-			threatNumber = piece.location[1];
+			threatLetterW = piece.location[0];
+			threatNumberW = piece.location[1];
 			blackInCheck = true;
 			break;
 		}
 	}
-	return [whiteInCheck, blackInCheck, threatLetter, threatNumber];
+	return [whiteInCheck, blackInCheck, threatLetterW, threatNumberW, threatLetterB, threatNumberB];
 }
 
 //Creating the black pawn objects
@@ -162,7 +163,7 @@ function main () {
 		}
 	}
 	$('.chess-column').click(function () {
-		//sellects pieces and tells them where to go
+		//sellects pieces and moves them
 		var self = this;
 		var player = null;
 		var notInCheck = true;
@@ -186,7 +187,8 @@ function main () {
 			stringdesiredlocation = $(self).attr('data-location');
 			desiredarry = getLocation(stringdesiredlocation);
 			var apponent = (board[desiredarry[0]][desiredarry[1]]);
-			if (apponent.color == player){ //this block is for castling
+			//this is for castling
+			if (apponent.color == player){
 				if(yourPiece.type == 'King'
 					 && apponent.type == 'Rook'
 					 && apponent.color == player
@@ -220,14 +222,51 @@ function main () {
 			} else  {
 				if (stringcurrentlocation != stringdesiredlocation) {
 					if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry)) {
-						if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry) == "Enpassant"){ //this block is for En passant
+						//this is for En passant
+						if (board[currentarry[0]][currentarry[1]].checkMove(desiredarry) == "Enpassant"){
 							Direction = yourPiece.direction;
+							apponent = board[desiredarry[0]][desiredarry[1] + (Direction * -1)] //now the piece is removed from the king piece array
+							board[desiredarry[0]][desiredarry[1] + (Direction * -1)] = "empty";
 							$('.board-row-' + (desiredarry[1]+(Direction * -1)) + ' .board-column-' + desiredarry[0] + ' img').remove();//removes the opposite pawn from is square
 						}
 						PLACE(board[currentarry[0]][currentarry[1]], desiredarry);
+						//Kings check to see if they are adjacent
+						if (yourPiece.type == 'King'){
+							var opposingKing = null;
+							var currentletteridx = translateLocation(yourPiece.location);
+							var currentdigit = yourPiece.location[1];
+							if (yourPiece.color == "white"){
+							opposingKing = blackKing;
+							} else if (yourPiece.color == "black"){
+							opposingKing = whiteKing;
+						}
+						if (opposingKing == (board [letters[currentletteridx]][(currentdigit + 1)])
+								|| opposingKing == (board [letters[currentletteridx]] [(currentdigit - 1)])
+								|| opposingKing == (board [letters[currentletteridx + 1]] [currentdigit])
+								|| opposingKing == (board [letters[currentletteridx - 1]] [currentdigit])
+								|| opposingKing == (board [letters[currentletteridx + 1]] [(currentdigit + 1)])
+								|| opposingKing == (board [letters[currentletteridx - 1]] [(currentdigit - 1)])
+								|| opposingKing == (board [letters[currentletteridx + 1]] [(currentdigit - 1)])
+								|| opposingKing == (board [letters[currentletteridx - 1]] [(currentdigit + 1)])
+							){
+								PLACE(board[desiredarry[0]][desiredarry[1]], currentarry);//moves the piece back to original spot
+								if (apponent != 'empty') PLACE(apponent, desiredarry);
+								notInCheck = false;
+								alert("Can't put your king in check!");
+								}
+							}
+						//checks to make sure that your king is not in check
 						var sacrificearry = checkSacrifice();
-						if ((player == "white" && sacrificearry[0]) || (player == "black" && sacrificearry[1])) {
-							//checks to make sure that your king is not in check
+						if (player == "white" && sacrificearry[0]){
+							if (sacrificearry[4] === desiredarry[0] && sacrificearry[5] === desiredarry[1]){
+							} else {
+							PLACE(board[desiredarry[0]][desiredarry[1]], currentarry);//moves the piece back to original spot
+							if (apponent != 'empty') PLACE(apponent, desiredarry);
+							notInCheck = false;
+							alert("Can't put your king in check!");
+							}
+						}
+						else if (player == "black" && sacrificearry[1]) {
 							if (sacrificearry[2] === desiredarry[0] && sacrificearry[3] === desiredarry[1]){
 							} else {
 							PLACE(board[desiredarry[0]][desiredarry[1]], currentarry);//moves the piece back to original spot
@@ -235,8 +274,8 @@ function main () {
 							notInCheck = false;
 							alert("Can't put your king in check!");
 							}
-
-						} if (notInCheck){
+						}
+						if (notInCheck){
 						 if (player == "white" && sacrificearry[1]) {
 								var location = blackKing.location;
 								$('.board-row-' + location[1] + ' .board-column-' + location[0]).addClass('inCheck');

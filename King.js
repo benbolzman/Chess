@@ -1,13 +1,14 @@
 function King (color, location) {
 	//A constructor for kings
-	var blackpieces = [blackpawns[0], blackpawns[1], blackpawns[2], blackpawns[3], blackpawns[4], blackpawns[5], blackpawns[6], blackpawns[7], blackrookL, blackrookR, blackknightL, blackknightR, blackbishopL, blackbishopR, blackqueen];
-	var whitepieces = [whitepawns[0], whitepawns[1], whitepawns[2], whitepawns[3], whitepawns[4], whitepawns[5], whitepawns[6], whitepawns[7], whiterookL, whiterookR, whiteknightL, whiteknightR, whitebishopL, whitebishopR, whitequeen];
 
 	var self = this;
 	this.moveCount = 0;
 	this.type = "King";
 	this.color = color;
 	this.location = location;
+	var blackpieces = [blackpawns[0], blackpawns[1], blackpawns[2], blackpawns[3], blackpawns[4], blackpawns[5], blackpawns[6], blackpawns[7], blackrookL, blackrookR, blackknightL, blackknightR, blackbishopL, blackbishopR, blackqueen];
+	var whitepieces = [whitepawns[0], whitepawns[1], whitepawns[2], whitepawns[3], whitepawns[4], whitepawns[5], whitepawns[6], whitepawns[7], whiterookL, whiterookR, whiteknightL, whiteknightR, whitebishopL, whitebishopR, whitequeen];
+
 	if (color == "black") {
 		this.otherteam = whitepieces;
 	} else if (color == "white") {
@@ -82,6 +83,9 @@ function King (color, location) {
 		}
 	return validMove
 	});
+	this.checkKing = (function (kingdest) {
+			return self.checkMove(kingdest);
+	});
 	this.isCheckmate = (function () {
 		var currentletteridx = translateLocation(self.location);
 		var currentdigit = self.location[1];
@@ -98,5 +102,6 @@ function King (color, location) {
 			checkmate = false;
 		}
 	return checkmate;
-	});
+});
+
 }
